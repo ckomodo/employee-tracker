@@ -39,7 +39,6 @@ INSERT INTO role (title, salary, department_id) VALUES ("Marketing Manager", 100
 INSERT INTO role (title, salary, department_id) VALUES ("Chief Tech Officer", 165000.00, 3);
 INSERT INTO role (title, salary, department_id) VALUES ("Tech Intern", 15000.00, 3);
 
-
 INSERT INTO employees (first_name, last_name, role_id) VALUES ("John", "Doe", 1);
 INSERT INTO employees (first_name, last_name, role_id) VALUES ("Evans", "Brown", 2);
 INSERT INTO employees (first_name, last_name, role_id) VALUES ("Mary", "Jane", 3);

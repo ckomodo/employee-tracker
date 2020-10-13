@@ -10,7 +10,23 @@ const connection = mysql.createConnection({
   database: "employees_db",
 });
 
-connection.connect();
+connection.connect(function (err) {
+  if (err) throw err;
+  console.log("connected as id " + connection.threadId);
+  // readDb();
+  startQues();
+});
+
+function readDb() {
+  connection.query("SELECT * FROM role", function (err, data) {
+    if (err) throw err;
+    console.table(data);
+  });
+  connection.query("SELECT * FROM employees", function (err, data) {
+    if (err) throw err;
+    console.table(data);
+  });
+}
 
 function startQues() {
   inquirer
@@ -54,8 +70,8 @@ function viewAllEmployees() {
   connection.query("SELECT * FROM employees", function (err, results) {
     if (err) throw err;
     console.table(results);
-    startQues();
   });
+  startQues();
 }
 function viewAllRoles() {
   connection.query("SELECT * FROM role", function (err, results) {
@@ -72,15 +88,87 @@ function viewAllDepartments() {
     startQues();
   });
 }
-function addAnEmployee() {
-  connection.query("SELECT * FROM role", function (err, results) {
-    if (err) throw err;
-    console.table(results);
-    startQues();
-  });
-}
-function addARole() {}
-function addADepartment() {}
-function updateEmployeeRole() {}
 
+function addAnEmployee() {
+  inquirer
+    .prompt([
+      {
+        name: "first_name",
+        type: "text",
+        message: "What is the employee's first name?",
+      },
+      {
+        name: "last_name",
+        type: "text",
+        message: "What is the employee's last name?",
+      },
+      {
+        name: "role",
+        type: "text",
+        message: "What is the numerical code of the employee's role?",
+      },
+      {
+        name: "manager_id",
+        type: "text",
+        message: "What is the manager ID of this employee?",
+      },
+    ])
+    .then(function ({ first_name, last_name, role, manager_id }) {
+      connection.query("INSERT INTO employees SET ?", {
+        first_name: first_name,
+        last_name: last_name,
+        role_id: role,
+        manager_id: manager_id,
+      });
+
+      {
+        if (err) throw err;
+        console.log("employee added");
+      }
+      startQues();
+    });
+}
+
+function addARole (){
+  inquirer.prompt([
+    {
+      name: "title",
+      type: "text",
+      message: "What is the title of this role?",
+    },
+    {
+      name: "salary",
+      type: "number",
+      message: "What is this role's salary?",
+    },
+    {
+      name: "department",
+      type: "text",
+      message: "What department is this role in?",
+    },
+]).then(function({title, salary, department}){
+connection.query("INSERT INTO role SET ?", {
+  title: title,
+  salary: salary,
+  department_id: department
+})
+{
+  if (err) throw err
+  console.log("role added");
+}
 startQues();
+})
+}
+
+function addADepartment(){
+  inquirer.prompt({
+    name: "departmentName",
+    type: "text",
+    message: "What is the new department?",
+  }).then(function({departmentName}){
+    connection.query("INSERT INTO department SET ?", {
+      name: departmentName
+    })
+    startQues();
+  })
+}
