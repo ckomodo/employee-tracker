@@ -13,20 +13,8 @@ const connection = mysql.createConnection({
 connection.connect(function (err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId);
-  // readDb();
   startQues();
 });
-
-// function readDb() {
-//   connection.query("SELECT * FROM role", function (err, data) {
-//     if (err) throw err;
-//     console.table(data);
-//   });
-//   connection.query("SELECT * FROM employees", function (err, data) {
-//     if (err) throw err;
-//     console.table(data);
-//   });
-// }
 
 function startQues() {
   inquirer
@@ -42,6 +30,9 @@ function startQues() {
         "Add a role",
         "Add a department",
         "Update an employee's role",
+        "Fire an employee",
+        "Delete a department",
+        "Delete a role",
         "Exit",
       ],
     })
@@ -60,6 +51,12 @@ function startQues() {
         addADepartment();
       } else if (answer.reasons === "Update an employee's role") {
         updateEmployeeRole();
+      } else if (answer.reasons === "Fire an employee") {
+        deleteEmployee();
+      } else if (answer.reasons === "Delete a department") {
+        deleteDepartment();
+      } else if (answer.reasons === "Delete a role") {
+        deleteRole();
       } else {
         connection.end();
       }
@@ -207,7 +204,7 @@ function updateEmployeeRole() {
     let newRoleArr = data.map(function (role) {
       return {
         name: role.title,
-        value: role.id
+        value: role.id,
       };
     });
 
@@ -217,14 +214,20 @@ function updateEmployeeRole() {
           name: "role",
           type: "list",
           message: "What role would you like to update?",
-          choices: newRoleArr
+          choices: newRoleArr,
         },
         {
           name: "newRole",
           type: "input",
           message: "What role would you like to update it to?",
         },
-      ]).then(function ({ newRole }, err) {
+        // {
+        //   name: "salary",
+        //   type: "input",
+        //   message: "What's the salary for this role?",
+        // },
+      ])
+      .then(function ({ newRole }, err) {
         connection.query("INSERT INTO role SET ?", {
           title: newRole,
         });
@@ -236,6 +239,107 @@ function updateEmployeeRole() {
         }
         startQues();
       });
+  });
+}
 
-})
+function deleteEmployee() {
+  connection.query("SELECT * FROM employees", function (err, data) {
+    if (err) throw err;
+
+    let newEmployeeArr = data.map(function (employee) {
+      return {
+        name: employee.first_name + employee.last_name,
+        value: employee.id,
+      };
+    });
+
+    inquirer
+      .prompt({
+        name: "employee",
+        type: "list",
+        message: "Which employee would you like to fire?",
+        choices: newEmployeeArr,
+      })
+      .then(function ({ employee }, err) {
+        connection.query(
+          "DELETE FROM employees WHERE id = ?",
+          [employee],
+          function (err, data) {
+            if (err) throw err;
+            console.log("===============");
+            console.log("successfully fired");
+            console.log("===============");
+            startQues();
+          }
+        );
+      });
+  });
+}
+
+function deleteDepartment() {
+  connection.query("SELECT * FROM department", function (err, data) {
+    if (err) throw err;
+
+    let deleteDeptArr = data.map(function (department) {
+      return {
+        name: department.name,
+        value: department.id
+      };
+    });
+
+    inquirer
+      .prompt({
+        name: "department",
+        type: "list",
+        message: "Which employee would you like to delete?",
+        choices: deleteDeptArr,
+      })
+      .then(function ({ department }, err) {
+        connection.query(
+          "DELETE FROM department WHERE id = ?",
+          [department],
+          function (err, data) {
+            if (err) throw err;
+            console.log("===============");
+            console.log("department successfully deleted");
+            console.log("===============");
+            startQues();
+          }
+        );
+      });
+  });
+}
+
+function deleteRole() {
+  connection.query("SELECT * FROM role", function (err, data) {
+    if (err) throw err;
+
+    let deleteRoleArr = data.map(function (role) {
+      return {
+        name: role.title,
+        value: role.id
+      };
+    });
+
+    inquirer
+      .prompt({
+        name: "role",
+        type: "list",
+        message: "Which role would you like to delete?",
+        choices: deleteRoleArr,
+      })
+      .then(function ({ role }, err) {
+        connection.query(
+          "DELETE FROM role WHERE id = ?",
+          [role],
+          function (err, data) {
+            if (err) throw err;
+            console.log("===============");
+            console.log("role successfully deleted");
+            console.log("===============");
+            startQues();
+          }
+        );
+      });
+  });
 }
